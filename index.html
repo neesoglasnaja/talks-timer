@@ -28,13 +28,60 @@
 		.timer {
 			display: none;
 			height: 100vh;
+			width: 100%;
 			flex-direction: column;
 			align-items: center;
 			justify-content: space-between;
+			position: relative;
+			overflow: hidden;
 		}
-
+		.timer._paused::after {
+			background-image: linear-gradient(90deg, #fff 0%, #fff 50%, transparent 50%);
+			position: absolute;
+			content: '';
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			opacity: 0.5;
+			background-size: 100px;
+			transform: skewX(45deg);
+		}
+		.timer__modifiers,
+		.timer__controls {
+			position: relative;
+			z-index: 20;
+		}
 		.timer__time {
 			font-size: 40vh;
+		}
+		.timer__controls {
+			text-align: right;
+			width: 100%;
+		}
+		.timer__btn {
+			background-color: #fff;
+			font-size: 0;
+			position: relative;
+			width: 60px;
+			height: 60px;
+			border-radius: 50%;
+			border: none;
+		}
+		.timer__pause::after,
+		.timer__clear::after {
+			content: '';
+			position: absolute;
+			border: 20px solid transparent;
+			top: 10px;
+		}
+		.timer__pause::after {
+			border-left-color: red;
+			left: 25px;
+		}
+		.timer__clear::after {
+			left: 10px;
+			border-color: red;
 		}
 	</style>
 </head>
@@ -53,8 +100,8 @@
 		<div class="timer__time">
 			<span class="timer__minutes">40</span>:<span class="timer__seconds">00</span></div>
 		<div class="timer__controls">
-			<button class="timer__pause">Pause</button>
-			<button class="timer__clear">Clear</button>
+			<button class="timer__btn timer__pause">Pause</button>
+			<button class="timer__btn timer__clear">Clear</button>
 		</div>
 	</section>
 

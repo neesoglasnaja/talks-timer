@@ -1,5 +1,7 @@
 (function() {
 
+	var timerStepNode = document.querySelector('.timer');
+
 	var config = {
 		chunks: [{
 				minutes: 40,
@@ -25,7 +27,8 @@
 
 		return {
 			init: function(minutes, config) {
-				console.log(minutes);
+				timerStepNode.classList.remove('_paused');
+				
 				if (minutes !== undefined) countFrom = minutes;
 				var timerDate = new Date(Date.now() + countFrom * 60 * 1000);
 				updateScreen(timerDate);
@@ -59,14 +62,17 @@
 		function pause() {
 			clearInterval(interval);
 			isInProgress = false;
+			timerStepNode.classList.add('_paused')
 		}
 
 		function resume() {
 			var timerDate = new Date(Date.now() + getLeftovers());
 			updateScreen(timerDate);
 			interval = setInterval(function() {
-					updateScreen(timerDate);
-				}, 100)
+				updateScreen(timerDate);
+			}, 100)
+
+			timerStepNode.classList.remove('_paused');
 		}
 
 		function updateScreen(timerDate) {
@@ -101,7 +107,6 @@
 
 	var Events = function () {
 		var selectTimeStepNode = document.querySelector('.select-time');
-		var timerStepNode = document.querySelector('.timer');
 		
 		return {
 			showTimer(time) {
