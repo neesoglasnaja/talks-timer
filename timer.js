@@ -16,16 +16,18 @@
 	};
 
 	var Timer = function(skipUpdate) {
+		var interval;
+		var isInProgress = false;
 		var countFrom = 0;
 		var left = 0;
-		var timerNode = document.querySelector('.timer');
-		var interval;
+		var minutesNode = document.querySelector('.timer__minutes');
+		var secondsNode = document.querySelector('.timer__seconds');
 
 		return {
 			init: function(minutes, config) {
+				console.log(minutes);
 				if (minutes !== undefined) countFrom = minutes;
-				var now = new Date();
-				var timerDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + countFrom, now.getSeconds(), now.getMilliseconds())
+				var timerDate = new Date(Date.now() + countFrom * 60 * 1000);
 				updateScreen(timerDate);
 				if (!skipUpdate) {
 					interval = setInterval(function(){
@@ -33,61 +35,120 @@
 					}, 100)
 				}
 			},
-			pause: function() {
-				clearInterval(interval);
+			toggle: function() {
+				if (isInProgress) { pause(); }
+				else { resume(); }
 			},
+			
 			clear: function() {
 				clearInterval(interval);
 				countFrom = 0;
 				left = 0;
-			},
-			continue: function() {
-				var now = new Date()
-				var timerDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + left.getMinutes(), now.getSeconds() + left.getSeconds(), now.getMilliseconds());
-				updateScreen(timerDate);
-				interval = setInterval(function(){
-						updateScreen(timerDate)
-					}, 100)
-			},
-			addTime: function(minutes) {
 
+				events.showOptions();
+			},
+			updateTime(minutes) {
+				pause();
+
+				var timerDate = new Date(Date.now() + getLeftovers() + minutes * 60 * 1000);
+				updateScreen(timerDate);
+				resume();
 			}
 		};
 
+		function pause() {
+			clearInterval(interval);
+			isInProgress = false;
+		}
+
+		function resume() {
+			var timerDate = new Date(Date.now() + getLeftovers());
+			updateScreen(timerDate);
+			interval = setInterval(function() {
+					updateScreen(timerDate);
+				}, 100)
+		}
+
 		function updateScreen(timerDate) {
+			if (!isInProgress) isInProgress = true;
+
 			var rightNow = new Date();
 			var isPositive = timerDate > rightNow;
-			var diff = isPositive ?  ( new Date(timerDate - rightNow)): ( new Date(rightNow - timerDate));
-			left = diff;
-			timerNode.textContent = (isPositive ? '+': '-') + diff.getMinutes() + ':' + diff.getSeconds();
+
+			var timezoneOffset = timerDate.getTimezoneOffset() * 60 * 1000;
+			var diff = isPositive ?  ( new Date(timerDate - Date.now() + timezoneOffset)) : (new Date(Date.now() - timerDate + timezoneOffset));
+			minutesNode.textContent = (isPositive ? '': '-') + diff.getMinutes();
+			secondsNode.textContent = (diff.getSeconds()< 10 ? '0' : '') + diff.getSeconds();
+
 			for (var i = 0; i < config.chunks.length; i++) {
-				if (config.chunks[i].minutes> diff.getMinutes()) {
-					document.bgColor = config.chunks[i].color
+				if (config.chunks[i].minutes >= diff.getMinutes()) {
+					document.bgColor = config.chunks[i].color;
 				}
 			}
+
+			left = diff;
+		}
+
+		function getLeftovers() {
+			var minutes = parseInt(minutesNode.innerHTML, 10);
+			var seconds = parseInt(secondsNode.innerHTML, 10);
+
+			var isPositive = minutes > 0;
+
+			return (minutes * 60 * 1000 + seconds * 1000) * (isPositive ? 1 : -1);
 		}
 	}	
 
+	var Events = function () {
+		var selectTimeStepNode = document.querySelector('.select-time');
+		var timerStepNode = document.querySelector('.timer');
+		
+		return {
+			showTimer(time) {
+
+				selectTimeStepNode.setAttribute("style", "display: none;");
+				timerStepNode.setAttribute("style", "display: flex;");
+
+				timer.init(time, config);
+			},
+			showOptions() {
+				selectTimeStepNode.setAttribute("style", "display: flex;");
+				timerStepNode.setAttribute("style", "display: none;");
+			}
+		}
+	};
+
 
 	var timer = new Timer(false);
-	timer.init(20, config);
+	var events = new Events();
 
-	var pauseNode = document.querySelector('.pause');
-	var continueNode = document.querySelector('.continue');
-	var clearNode = document.querySelector('.clear');
-	var addNode = document.querySelector('.add');
+	var timeOptionNodes = document.querySelectorAll('.select-time__option');
 
-	pauseNode.addEventListener('click', function() {
-		timer.pause();
+	timeOptionNodes.forEach(node => {
+		node.addEventListener('click', function() {
+			var time = this.getAttribute('data-time');
+
+			events.showTimer(time);
+		});
 	});
-	continueNode.addEventListener('click', function() {
-		timer.continue();
-	});
+
+	var pauseNode = document.querySelector('.timer__pause');
+	var clearNode = document.querySelector('.timer__clear');
+	var changeTimeNodes = document.querySelectorAll('.timer__change-time');
+
 	clearNode.addEventListener('click', function() {
 		timer.clear();
 	});
-	addNode.addEventListener('click', function() {
-		timer.addTime(5);
+
+	pauseNode.addEventListener('click', function() {
+		timer.toggle();
+	});
+	changeTimeNodes.forEach(node => {
+		node.addEventListener('click', function() {
+			var value = parseInt(this.getAttribute('data-value'), 10);
+
+			timer.updateTime(value);
+		});
 	});
 
 })();

@@ -3,13 +3,60 @@
 <head>
 	<meta charset="utf-8">
 	<title>Timer</title>
+	<style type="text/css">
+		body {
+			margin: 0;
+			padding: 0;
+		}
+		.select-time {
+			display: flex;
+			height: 100vh;
+			flex-direction: row;
+			background-color: #292929;
+			justify-content: center;
+			align-items: center;
+		}
+		.select-time__option {
+			padding: 50px;
+			background-color: #ffffff;
+			color: #000;
+			font-size: 72px;
+			border: none;
+			border-radius: 20px;
+			margin: 30px;
+		}
+		.timer {
+			display: none;
+			height: 100vh;
+			flex-direction: column;
+			align-items: center;
+			justify-content: space-between;
+		}
+
+		.timer__time {
+			font-size: 40vh;
+		}
+	</style>
 </head>
 <body>
-	<div class="timer"></div>
-	<button class="pause">Пауза</button>
-	<button class="continue">Продолжить</button>
-	<button class="clear">Очистить</button>
-	<button class="add">+5 минут</button>
+	<section class="select-time">
+		<button class="select-time__option" data-time="1">10</button>
+		<button class="select-time__option" data-time="20">20</button>
+		<button class="select-time__option" data-time="30">30</button>
+		<button class="select-time__option" data-time="40">40</button>
+	</section>
+	<section class="timer">
+		<div class="timer__modifiers">
+			<button class="timer__change-time timer__sub" data-value="-5">-5 min</button>
+			<button class="timer__change-time timers__add" data-value="5">+5 min</button>
+		</div>
+		<div class="timer__time">
+			<span class="timer__minutes">40</span>:<span class="timer__seconds">00</span></div>
+		<div class="timer__controls">
+			<button class="timer__pause">Pause</button>
+			<button class="timer__clear">Clear</button>
+		</div>
+	</section>
 
 	<script type="text/javascript" src="timer.js"></script>
 </body>
