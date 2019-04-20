@@ -1,6 +1,7 @@
 (function() {
 
 	var timerStepNode = document.querySelector('.timer');
+	var timeout = 300;
 
 	var config = {
 		chunks: [{
@@ -21,7 +22,7 @@
 		var interval;
 		var isInProgress = false;
 		var countFrom = 0;
-		var left = 0;
+		var finalTime = null;
 		var minutesNode = document.querySelector('.timer__minutes');
 		var secondsNode = document.querySelector('.timer__seconds');
 
@@ -30,31 +31,25 @@
 				timerStepNode.classList.remove('_paused');
 				
 				if (minutes !== undefined) countFrom = minutes;
-				var timerDate = new Date(Date.now() + countFrom * 60 * 1000);
-				updateScreen(timerDate);
-				if (!skipUpdate) {
-					interval = setInterval(function(){
-						updateScreen(timerDate)
-					}, 100)
-				}
+				finalTime = new Date(Date.now() + countFrom * 60 * 1000);
+				updateScreen();
+				interval = setInterval(updateScreen, timeout);
 			},
 			toggle: function() {
 				if (isInProgress) { pause(); }
 				else { resume(); }
 			},
-			
 			clear: function() {
 				clearInterval(interval);
 				countFrom = 0;
-				left = 0;
+				finalTime = null;
 
 				events.showOptions();
 			},
 			updateTime(minutes) {
 				pause();
-
-				var timerDate = new Date(Date.now() + getLeftovers() + minutes * 60 * 1000);
-				updateScreen(timerDate);
+				finalTime = new Date(Date.now() + getLeftovers(minutes));
+				updateScreen();
 				resume();
 			}
 		};
@@ -66,42 +61,37 @@
 		}
 
 		function resume() {
-			var timerDate = new Date(Date.now() + getLeftovers());
-			updateScreen(timerDate);
-			interval = setInterval(function() {
-				updateScreen(timerDate);
-			}, 100)
+			finalTime = new Date(Date.now() + getLeftovers());
+			interval = setInterval(updateScreen, timeout);
 
 			timerStepNode.classList.remove('_paused');
 		}
 
-		function updateScreen(timerDate) {
+		function updateScreen() {
 			if (!isInProgress) isInProgress = true;
 
 			var rightNow = new Date();
-			var isPositive = timerDate > rightNow;
+			var isPositive = finalTime > rightNow;
 
-			var timezoneOffset = timerDate.getTimezoneOffset() * 60 * 1000;
-			var diff = isPositive ?  ( new Date(timerDate - Date.now() + timezoneOffset)) : (new Date(Date.now() - timerDate + timezoneOffset));
-			minutesNode.textContent = (isPositive ? '': '-') + diff.getMinutes();
-			secondsNode.textContent = (diff.getSeconds()< 10 ? '0' : '') + diff.getSeconds();
+			var time = isPositive ? (finalTime - rightNow) : (rightNow - finalTime);
+			var minutes = parseInt(time/1000/60, 10);
+			var seconds = parseInt((time - minutes * 60 * 1000)/1000, 10);
+
+			minutesNode.textContent = (isPositive ? '' : '-') + minutes;
+			secondsNode.textContent = (seconds < 10 ? '0' : '') + seconds;
+			timerStepNode.setAttribute('data-value', time * (isPositive ? 1: -1));
 
 			for (var i = 0; i < config.chunks.length; i++) {
-				if (config.chunks[i].minutes >= diff.getMinutes()) {
+				if (config.chunks[i].minutes >= minutes * (isPositive ? 1: -1)) {
 					document.bgColor = config.chunks[i].color;
 				}
 			}
-
-			left = diff;
 		}
 
-		function getLeftovers() {
-			var minutes = parseInt(minutesNode.innerHTML, 10);
-			var seconds = parseInt(secondsNode.innerHTML, 10);
-
-			var isPositive = minutes > 0;
-
-			return (minutes * 60 * 1000 + seconds * 1000) * (isPositive ? 1 : -1);
+		function getLeftovers(additionalMinutes) {
+			var value = parseInt(timerStepNode.getAttribute('data-value'), 10) + (additionalMinutes ? parseInt(additionalMinutes, 10)*60*1000 : 0);
+			
+			return value;
 		}
 	}	
 
