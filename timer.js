@@ -1,22 +1,10 @@
 (function() {
 
 	var timerStepNode = document.querySelector('.timer');
+	var bodyNode = document.querySelector('body');
 	var timeout = 300;
 
-	var config = {
-		chunks: [{
-				minutes: 40,
-				color: 'green'
-			},
-			{
-				minutes: 20,
-				color: 'orange'
-			},
-			{
-				minutes: 5,
-				color: 'red'
-		}]
-	};
+	var maxHue = 110;
 
 	var Timer = function(skipUpdate) {
 		var interval;
@@ -27,10 +15,13 @@
 		var secondsNode = document.querySelector('.timer__seconds');
 
 		return {
-			init: function(minutes, config) {
-				timerStepNode.classList.remove('_paused');
-				
+			init: function(minutes) {
 				if (minutes !== undefined) countFrom = minutes;
+
+				timerStepNode.classList.remove('_paused');
+				timerStepNode.setAttribute('data-time', countFrom * 60 * 1000)
+				bodyNode.style.setProperty('--main-hue', maxHue);
+				
 				finalTime = new Date(Date.now() + countFrom * 60 * 1000);
 				updateScreen();
 				interval = setInterval(updateScreen, timeout);
@@ -49,6 +40,9 @@
 			updateTime(minutes) {
 				pause();
 				finalTime = new Date(Date.now() + getLeftovers(minutes));
+				var initialTime = parseInt(timerStepNode.getAttribute('data-time'));
+				var newTime = initialTime + minutes * 60 * 1000;
+				timerStepNode.setAttribute('data-time', newTime > 1 ? newTime : 1);
 				updateScreen();
 				resume();
 			}
@@ -81,11 +75,11 @@
 			secondsNode.textContent = (seconds < 10 ? '0' : '') + seconds;
 			timerStepNode.setAttribute('data-value', time * (isPositive ? 1: -1));
 
-			for (var i = 0; i < config.chunks.length; i++) {
-				if (config.chunks[i].minutes >= minutes * (isPositive ? 1: -1)) {
-					document.bgColor = config.chunks[i].color;
-				}
-			}
+			var fullTime = isPositive ? time : time * -1;
+			var originTime = parseInt(timerStepNode.getAttribute('data-time'), 10);
+
+			var hue =  parseInt(fullTime / originTime * maxHue);
+			bodyNode.style.setProperty('--main-hue', hue > 0 ? hue : 0);
 		}
 
 		function getLeftovers(additionalMinutes) {
@@ -104,7 +98,7 @@
 				selectTimeStepNode.setAttribute("style", "display: none;");
 				timerStepNode.setAttribute("style", "display: flex;");
 
-				timer.init(time, config);
+				timer.init(time);
 			},
 			showOptions() {
 				selectTimeStepNode.setAttribute("style", "display: flex;");
@@ -129,6 +123,7 @@
 
 	var pauseNode = document.querySelector('.timer__pause');
 	var clearNode = document.querySelector('.timer__clear');
+	var timeNode = document.querySelector('.timer__time');
 	var changeTimeNodes = document.querySelectorAll('.timer__change-time');
 
 	clearNode.addEventListener('click', function() {
@@ -138,6 +133,11 @@
 	pauseNode.addEventListener('click', function() {
 		timer.toggle();
 	});
+
+	timeNode.addEventListener('click', function() {
+		timer.toggle();
+	});
+	
 	changeTimeNodes.forEach(node => {
 		node.addEventListener('click', function() {
 			var value = parseInt(this.getAttribute('data-value'), 10);

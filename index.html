@@ -4,9 +4,14 @@
 	<meta charset="utf-8">
 	<title>Timer</title>
 	<style type="text/css">
+		:root {
+			--main-hue: 110;
+		}
 		body {
 			margin: 0;
 			padding: 0;
+			background-color: hsl(var(--main-hue), 70%, 40%);
+			font-family: 'Courier New', Courier, monospace;
 		}
 		.select-time {
 			display: flex;
@@ -46,6 +51,7 @@
 			opacity: 0.5;
 			background-size: 100px;
 			transform: skewX(45deg);
+			z-index: -1;
 		}
 		.timer__modifiers,
 		.timer__controls {
@@ -54,6 +60,8 @@
 		}
 		.timer__time {
 			font-size: 40vh;
+			color: #fff;
+			text-shadow: 0 0px 121px #000;
 		}
 		.timer__controls {
 			text-align: right;
@@ -67,6 +75,7 @@
 			height: 60px;
 			border-radius: 50%;
 			border: none;
+			overflow: hidden;
 		}
 		.timer__pause::after,
 		.timer__clear::after {
@@ -87,7 +96,7 @@
 </head>
 <body>
 	<section class="select-time">
-		<button class="select-time__option" data-time="0.2">10</button>
+		<button class="select-time__option" data-time="1">10</button>
 		<button class="select-time__option" data-time="20">20</button>
 		<button class="select-time__option" data-time="30">30</button>
 		<button class="select-time__option" data-time="40">40</button>
